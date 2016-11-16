@@ -22,6 +22,16 @@ logging.basicConfig(filename='debug.log', level=logging.DEBUG)
 # build a resource manager service
 cb = build('cloudbilling', 'v1', credentials=credentials)
 
+def enableProjectBilling(projectId, billingAccountName):
+
+		body = {
+			'projectId': projectId,
+			'billingAccountName': billingAccountName,
+			'billingEnabled': True,
+		}
+
+		return self.cloudbilling.projects().updateBillingInfo(name='projects/'+name, body=body).execute()
+
 def getBillingAccounts():
 
 	# create a request to list billingAccounts
@@ -47,9 +57,15 @@ def getBillingAccounts():
 #
 # Cloud Resource Manager (cloudresourcemanager)
 #
-
-# build a resource manager service
 crm = build('cloudresourcemanager', 'v1', credentials=credentials)
+
+def createProject(project):
+
+	try:
+		return crm.projects().create(body=project).execute()
+	except Exception as e:
+		print '[%s]' % e._get_reason()
+		return {}
 
 def getOrganizations():
 
@@ -57,6 +73,11 @@ def getOrganizations():
 	response = crm.organizations().search(body={}).execute()
 
 	return response['organizations']
+
+def getProject(projectId):
+
+	# create a request to list projects
+	return crm.projects().get(projectId=projectId).execute()
 
 def getProjects():
 
@@ -79,3 +100,36 @@ def getProjects():
 		request = crm.projects().list_next(request, response)
 
 	return projects
+
+def updateProject(projectId, body):
+	try:
+		return crm.projects().update(projectId=projectId, body=body).execute()
+	except Exception as e:
+		print '[%s]' % e._get_reason()
+		return {}
+#
+# IAM (Identity and Access Management)
+#
+iam = build('iam', 'v1', credentials=credentials)
+
+def createServiceAccount(projectId, accountId, displayName=None):
+
+	# set displayName
+	if not displayName:
+		displayName = accountId
+
+	params = {
+		'name': 'projects/'+projectId,
+		'body': {
+			'accountId': accountId,
+			'serviceAccount': {
+				'displayName': displayName,
+			},
+		},
+	}
+
+	try:
+		return iam.projects().serviceAccounts().create(**params).execute()
+	except Exception as e:
+		print '[%s]' % e._get_reason().split('/')[-1]
+		return {}

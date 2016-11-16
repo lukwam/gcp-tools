@@ -1,35 +1,73 @@
 #!/usr/bin/env python
 
 # import standard libraries
-import argparse, os, sys
+import argparse, json, os, re, sys
 
 # update path
 sys.path.insert(0, 'lib')
 
-def createProject(projectId, organization=None, folder=None):
+def createProject(g, projectId, organization=None, folder=None, labels=None):
+	project = {
+		'projectId': projectId,
+		'name': projectId,
+	}
+
+	if organization:
+		project['parent'] = {
+			'id': organization.replace('organizations/', ''),
+			'type': 'organization',
+		}
+	elif folder:
+		project['parent'] = {
+			'id': folder.replace('folders/', ''),
+			'type': 'folder',
+		}
+
 	sys.stdout.write('   * creating project: %s...' % projectId)
 	sys.stdout.flush()
-	print
 
-def enableBilling(projectId, billingAccount):
+	result = g.createProject(project)
+	if result:
+		print 'successful.'
+
+def createServiceAccounts(g, projectId, serviceAccounts):
+	print '   * creating service accounts:'
+	for accountId in serviceAccounts.split(','):
+		sys.stdout.write('     - %s...' % accountId)
+		sys.stdout.flush()
+		result = g.createServiceAccount(projectId, accountId)
+		if result:
+			print 'successful.'
+
+def enableBilling(g, projectId, billingAccount):
 	sys.stdout.write('   * enabling billing: billingAccounts/%s...' % billingAccount)
 	sys.stdout.flush()
 	print
 
-def enableServices(projectId, apis):
+def enableServices(g, projectId, apis):
 	sys.stdout.write('   * enabling APIs: %s...' % apis)
 	sys.stdout.flush()
 	print
 
-def enableUsageBucket(projectId, usageBucket):
+def enableUsageBucket(g, projectId, usageBucket):
 	sys.stdout.write('   * enabling compute usage export: gs://%s/...' % usageBucket)
 	sys.stdout.flush()
 	print
 
-def setLabels(projectId, labels):
-	sys.stdout.write('   * setting project labels: %s...' % labels)
+def setLabels(g, projectId, labels):
+	sys.stdout.write('   * updating labels: %s...' % labels)
 	sys.stdout.flush()
-	print
+
+	project = g.getProject(projectId)
+	if 'labels' not in project:
+		project['labels'] = {}
+	for l in labels.split(','):
+		if re.search('.=.', l):
+			(k, v) = l.split('=')
+			project['labels'][k.lower()] = v
+	result = g.updateProject(projectId, project)
+	if result:
+		print 'successful.'
 
 def main():
 
@@ -79,6 +117,14 @@ def main():
 	)
 
 	parser.add_argument(
+		'-s',
+		'--serviceAccounts',
+		action='store',
+		default=None,
+		help='Service Accounts (ex. account1,account2)'
+	)
+
+	parser.add_argument(
 		'-t',
 		'--template',
 		action='store',
@@ -117,6 +163,7 @@ def main():
 	folder = None
 	labels = None
 	organization = None
+	serviceAccounts = None
 	usageBucket = None
 
 	# check for template
@@ -128,6 +175,8 @@ def main():
 		# default folder
 
 		# default labels
+
+		# default service accounts
 
 		# default billing account
 
@@ -146,6 +195,8 @@ def main():
 		labels = args.labels
 	if args.organization:
 		organization = args.organization
+	if args.serviceAccounts:
+		serviceAccounts = args.serviceAccounts
 	if args.usageBucket:
 		usageBucket = args.usageBucket
 
@@ -159,6 +210,10 @@ def main():
 	if labels:
 		print '   * Labels:'
 		print '     - '+'\n     - '.join(sorted(labels.split(',')))
+
+	if serviceAccounts:
+		print '   * Service Accounts:'
+		print '     - '+'\n     - '.join(sorted(serviceAccounts.split(',')))
 
 	if billingAccount:
 		print '   * Billing: billingAccounts/%s...' % billingAccount
@@ -176,29 +231,32 @@ def main():
 		print '\n%s:' % projectId
 
 		# create the project
-		print '   * creating project...'
 		if organization:
-			createProject(projectId, organization=organization)
+			createProject(g, projectId, organization=organization, labels=labels)
 		elif folder:
-			createProject(projectId, folder=folder)
+			createProject(g, projectId, folder=folder, labels=labels)
 		else:
-			createProject(projectId)
+			createProject(g, projectId, labels=labels)
+
+		# create project labels
+		if serviceAccounts:
+			createServiceAccounts(g, projectId, serviceAccounts)
 
 		# create project labels
 		if labels:
-			setLabels(projectId, labels)
+			setLabels(g, projectId, labels)
 
 		# enable billing
 		if billingAccount:
-			enableBilling(projectId, billingAccount)
+			enableBilling(g, projectId, billingAccount)
 
 		# apis
 		if apis:
-			enableServices(projectId, apis)
+			enableServices(g, projectId, apis)
 
 		# compute usage bucket
 		if usageBucket:
-			enableUsageBucket(projectId, usageBucket)
+			enableUsageBucket(g, projectId, usageBucket)
 
 if __name__ == "__main__":
 	main()

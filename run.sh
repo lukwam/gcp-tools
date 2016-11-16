@@ -25,6 +25,6 @@ $SUDO docker run $TTY --rm \
         -v ~/.config:/root/.config \
         -v /etc/localtime:/etc/localtime:ro \
         -w /usr/src \
-        broadinstitute/python:bits $*
+        lukwam/gcp-tools:local $*
 
 popd >/dev/null

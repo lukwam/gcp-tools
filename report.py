@@ -11,17 +11,18 @@ import google as g
 
 def main():
 
-	print 'Getting organizations...'
+	print 'Getting data from GCP...'
+
+	print '   * organizations...'
 	organizations = g.getOrganizations()
-	print '%s organizations found.' % str(len(organizations))
-
-	print '\nGetting billing accounts...'
+	print '   * billing accounts...'
 	billingAccounts = g.getBillingAccounts()
-	print '%s billing accounts found.' % str(len(billingAccounts))
-
-	print '\nGetting projects...'
+	print '   * projects...'
 	projects = g.getProjects()
-	print '%s projects found.' % str(len(projects))
+
+	print '\nOrganizations (%s)' % str(len(organizations))
+	print 'Billing Accounts (%s)' % str(len(billingAccounts))
+	print 'Projects (%s)' % str(len(projects))
 
 if __name__ == "__main__":
 	main()

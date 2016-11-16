@@ -9,16 +9,20 @@ from oauth2client.client import GoogleCredentials
 # get application default credentials
 credentials = GoogleCredentials.get_application_default()
 
-# import loggin
+# import logging
 import logging
 
 # enable logging
 logging.basicConfig(filename='debug.log', level=logging.DEBUG)
 
-def getBillingAccounts():
+#
+# Cloud Billing (cloudbilling)
+#
 
-	# build a resource manager service
-	cb = build('cloudbilling', 'v1', credentials=credentials)
+# build a resource manager service
+cb = build('cloudbilling', 'v1', credentials=credentials)
+
+def getBillingAccounts():
 
 	# create a request to list billingAccounts
 	request = cb.billingAccounts().list()
@@ -40,10 +44,14 @@ def getBillingAccounts():
 
 	return billingAccounts
 
-def getOrganizations():
+#
+# Cloud Resource Manager (cloudresourcemanager)
+#
 
-	# build a resource manager service
-	crm = build('cloudresourcemanager', 'v1', credentials=credentials)
+# build a resource manager service
+crm = build('cloudresourcemanager', 'v1', credentials=credentials)
+
+def getOrganizations():
 
 	# create a request to list organizations
 	response = crm.organizations().search(body={}).execute()
@@ -51,9 +59,6 @@ def getOrganizations():
 	return response['organizations']
 
 def getProjects():
-
-	# build a resource manager service
-	crm = build('cloudresourcemanager', 'v1', credentials=credentials)
 
 	# create a request to list projects
 	request = crm.projects().list()

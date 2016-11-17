@@ -32,7 +32,7 @@ def createProject(g, projectId, organization=None, folder=None, labels=None):
 
 def createServiceAccounts(g, projectId, serviceAccounts):
 	print '   * creating service accounts:'
-	for accountId in serviceAccounts.split(','):
+	for accountId in sorted(serviceAccounts.split(',')):
 		sys.stdout.write('     - %s...' % accountId)
 		sys.stdout.flush()
 		result = g.createServiceAccount(projectId, accountId)
@@ -42,19 +42,35 @@ def createServiceAccounts(g, projectId, serviceAccounts):
 def enableBilling(g, projectId, billingAccount):
 	sys.stdout.write('   * enabling billing: billingAccounts/%s...' % billingAccount)
 	sys.stdout.flush()
-	print
+	result = g.enableProjectBilling(projectId, 'billingAccounts/%s' % billingAccount)
+	if result:
+		print 'successful.'
 
 def enableServices(g, projectId, apis):
-	sys.stdout.write('   * enabling APIs: %s...' % apis)
-	sys.stdout.flush()
-	print
+	print '   * enabling APIs:'
+	for serviceName in sorted(apis.split(',')):
+		sys.stdout.write('     - %s...' % serviceName)
+		sys.stdout.flush()
+		operation = g.enableProjectService(projectId, serviceName)
+		if operation:
+			op = operation['name']
 
-def enableUsageBucket(g, projectId, usageBucket):
-	sys.stdout.write('   * enabling compute usage export: gs://%s/...' % usageBucket)
-	sys.stdout.flush()
-	print
+			# print result
+			print 'successful.'
+		else:
+			print
+		sys.exit(1)
 
-def setLabels(g, projectId, labels):
+def enableUsageBucket(g, projectId, bucketName):
+	sys.stdout.write('   * enabling compute usage export: gs://%s/...' % bucketName)
+	sys.stdout.flush()
+	result = g.setProjectUsgaeExportBucket(projectId, bucketName)
+	if result:
+		print 'successful.'
+	else:
+		print
+
+def updateLabels(g, projectId, labels):
 	sys.stdout.write('   * updating labels: %s...' % labels)
 	sys.stdout.flush()
 
@@ -244,7 +260,7 @@ def main():
 
 		# create project labels
 		if labels:
-			setLabels(g, projectId, labels)
+			updateLabels(g, projectId, labels)
 
 		# enable billing
 		if billingAccount:

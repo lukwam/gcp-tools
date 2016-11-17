@@ -30,7 +30,7 @@ def enableProjectBilling(projectId, billingAccountName):
 			'billingEnabled': True,
 		}
 
-		return self.cloudbilling.projects().updateBillingInfo(name='projects/'+name, body=body).execute()
+		return cb.projects().updateBillingInfo(name='projects/'+projectId, body=body).execute()
 
 def getBillingAccounts():
 
@@ -53,6 +53,20 @@ def getBillingAccounts():
 		request = cb.billingAccounts().list_next(request, response)
 
 	return billingAccounts
+
+#
+# Compute
+#
+compute = build('compute', 'v1', credentials=credentials)
+
+def setProjectUsgaeExportBucket(projectId, bucketName):
+
+	body = {
+		'bucketName': bucketName,
+		'reportNamePrefix': 'usage',
+	}
+
+	return compute.projects().setUsageExportBucket(project=projectId, body=body).execute()
 
 #
 # Cloud Resource Manager (cloudresourcemanager)
@@ -133,3 +147,16 @@ def createServiceAccount(projectId, accountId, displayName=None):
 	except Exception as e:
 		print '[%s]' % e._get_reason().split('/')[-1]
 		return {}
+
+#
+# Service Management
+#
+sm = build('servicemanagement', 'v1', credentials=credentials)
+
+def enableProjectService(projectId, serviceName):
+
+	body = {
+		'consumerId': 'project:%s' % projectId
+	}
+
+	return sm.services().enable(serviceName=serviceName, body=body).execute()

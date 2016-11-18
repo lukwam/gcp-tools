@@ -160,3 +160,7 @@ def enableProjectService(projectId, serviceName):
 	}
 
 	return sm.services().enable(serviceName=serviceName, body=body).execute()
+
+def getServiceOperation(operation):
+
+	return sm.operations().get(name=operation).execute()

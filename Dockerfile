@@ -15,7 +15,7 @@ RUN apt-get -y autoremove \
 
 # install python packages
 RUN pip install --upgrade pip \
-	&& pip install google-api-python-client
+	&& pip install google-api-python-client pyyaml
 
 WORKDIR /usr/src
 

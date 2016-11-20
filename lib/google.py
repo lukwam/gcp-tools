@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Functions for calling Google APIs."""
 
 # import build
 from googleapiclient.discovery import build
@@ -22,145 +23,218 @@ logging.basicConfig(filename='debug.log', level=logging.DEBUG)
 # build a resource manager service
 cb = build('cloudbilling', 'v1', credentials=credentials)
 
-def enableProjectBilling(projectId, billingAccountName):
+def enable_project_billing(project_id, billing_account_name):
+    """
 
-		body = {
-			'projectId': projectId,
-			'billingAccountName': billingAccountName,
-			'billingEnabled': True,
-		}
+    Function: enable_project_billing
 
-		return cb.projects().updateBillingInfo(name='projects/'+projectId, body=body).execute()
+    Google Cloud Billing API - projects().updateBillingInfo()
 
-def getBillingAccounts():
+    Parameters:
 
-	# create a request to list billingAccounts
-	request = cb.billingAccounts().list()
+      project_id         - [type/description]
+      billing_account_name - [type/description]
 
-	# create a list to hold all the projects
-	billingAccounts = []
+    Returns:
 
-	# page through the responses
-	while request is not None:
+      return response
+    """
 
-		# execute the request
-		response = request.execute()
+    body = {
+        'project_id': project_id,
+        'billingAccountName': billing_account_name,
+        'billingEnabled': True,
+    }
 
-		# add projects to the projects list
-		if 'billingAccounts' in response:
-			billingAccounts.extend(response['billingAccounts'])
+    params = {
+        'name': 'projects/%s' % project_id,
+        'body': body,
+    }
 
-		request = cb.billingAccounts().list_next(request, response)
+    return cb.projects().updateBillingInfo(**params).execute()
 
-	return billingAccounts
+def get_billing_accounts():
+    """
+
+    Function: get_billing_accounts
+
+    Google Cloud Billing API - billingAccounts().list()
+
+    Returns:
+
+      return list of billing accounts
+    """
+    # create a request to list billingAccounts
+    request = cb.billingAccounts().list()
+
+    # create a list to hold all the projects
+    billing_accounts = []
+
+    # page through the responses
+    while request is not None:
+
+        # execute the request
+        response = request.execute()
+
+        # add projects to the projects list
+        if 'billingAccounts' in response:
+            billing_accounts.extend(response['billingAccounts'])
+
+        request = cb.billingAccounts().list_next(request, response)
+
+    return billing_accounts
 
 #
 # Compute
 #
 compute = build('compute', 'v1', credentials=credentials)
 
-def setProjectUsgaeExportBucket(projectId, bucketName):
+def set_project_usgae_export_bucket(project_id, bucket_name):
+    """
 
-	body = {
-		'bucketName': bucketName,
-		'reportNamePrefix': 'usage',
-	}
+    Function: set_project_usgae_export_bucket
 
-	return compute.projects().setUsageExportBucket(project=projectId, body=body).execute()
+    description
+
+    Parameters:
+
+      project_id  - [type/description]
+      bucket_name - [type/description]
+
+    Returns:
+
+      return description
+    """
+    body = {
+        'bucketName': bucket_name,
+        'reportNamePrefix': 'usage',
+    }
+
+    params = {
+        'project': project_id,
+        'body': body,
+    }
+
+    return compute.projects().setUsageExportBucket(**params).execute()
 
 #
 # Cloud Resource Manager (cloudresourcemanager)
 #
 crm = build('cloudresourcemanager', 'v1', credentials=credentials)
 
-def createProject(project):
+def create_project(project):
+    """Returns a created project."""
+    try:
+        return crm.projects().create(body=project).execute()
+    except Exception as exception:
+        print '[%s]' % exception._get_reason()
+        return {}
 
-	try:
-		return crm.projects().create(body=project).execute()
-	except Exception as e:
-		print '[%s]' % e._get_reason()
-		return {}
+def get_organizations():
+    """Returns a list of organizations."""
+    # create a request to list organizations
+    response = crm.organizations().search(body={}).execute()
 
-def getOrganizations():
+    return response['organizations']
 
-	# create a request to list organizations
-	response = crm.organizations().search(body={}).execute()
+def get_project(project_id):
+    """Returns a project."""
+    # create a request to list projects
+    return crm.projects().get(projectId=project_id).execute()
 
-	return response['organizations']
+def get_projects():
+    """
 
-def getProject(projectId):
+    Function: get_projects
 
-	# create a request to list projects
-	return crm.projects().get(projectId=projectId).execute()
+    description
 
-def getProjects():
+    Returns:
 
-	# create a request to list projects
-	request = crm.projects().list()
+      return description
+    """
+    # create a request to list projects
+    request = crm.projects().list()
 
-	# create a list to hold all the projects
-	projects = []
+    # create a list to hold all the projects
+    projects = []
 
-	# page through the responses
-	while request is not None:
+    # page through the responses
+    while request is not None:
 
-		# execute the request
-		response = request.execute()
+        # execute the request
+        response = request.execute()
 
-		# add projects to the projects list
-		if 'projects' in response:
-			projects.extend(response['projects'])
+        # add projects to the projects list
+        if 'projects' in response:
+            projects.extend(response['projects'])
 
-		request = crm.projects().list_next(request, response)
+        request = crm.projects().list_next(request, response)
 
-	return projects
+    return projects
 
-def updateProject(projectId, body):
-	try:
-		return crm.projects().update(projectId=projectId, body=body).execute()
-	except Exception as e:
-		print '[%s]' % e._get_reason()
-		return {}
+def update_project(project_id, body):
+    """Returns an updated project."""
+    try:
+        return crm.projects().update(projectId=project_id, body=body).execute()
+    except Exception as exception:
+        print '[%s]' % exception._get_reason()
+        return {}
 #
 # IAM (Identity and Access Management)
 #
 iam = build('iam', 'v1', credentials=credentials)
 
-def createServiceAccount(projectId, accountId, displayName=None):
+def create_service_account(project_id, account_id, display_name=None):
+    """
 
-	# set displayName
-	if not displayName:
-		displayName = accountId
+    Function: create_service_account
 
-	params = {
-		'name': 'projects/'+projectId,
-		'body': {
-			'accountId': accountId,
-			'serviceAccount': {
-				'displayName': displayName,
-			},
-		},
-	}
+    description
 
-	try:
-		return iam.projects().serviceAccounts().create(**params).execute()
-	except Exception as e:
-		print '[%s]' % e._get_reason().split('/')[-1]
-		return {}
+    Parameters:
+
+      project_id   - [type/description]
+      account_d    - [type/description]
+      display_name - [type/description]
+
+    Returns:
+
+      return description
+    """
+    # set displayName
+    if not display_name:
+        display_name = account_id
+
+    params = {
+        'name': 'projects/'+project_id,
+        'body': {
+            'accountId': account_id,
+            'serviceAccount': {
+                'displayName': display_name,
+            },
+        },
+    }
+
+    try:
+        return iam.projects().serviceAccounts().create(**params).execute()
+    except Exception as exception:
+        print '[%s]' % exception._get_reason().split('/')[-1]
+        return {}
 
 #
 # Service Management
 #
 sm = build('servicemanagement', 'v1', credentials=credentials)
 
-def enableProjectService(projectId, serviceName):
+def enable_project_service(project_id, service_name):
+    """Returns an enabled project service response."""
+    body = {
+        'consumerId': 'project:%s' % project_id
+    }
 
-	body = {
-		'consumerId': 'project:%s' % projectId
-	}
+    return sm.services().enable(serviceName=service_name, body=body).execute()
 
-	return sm.services().enable(serviceName=serviceName, body=body).execute()
-
-def getServiceOperation(operation):
-
-	return sm.operations().get(name=operation).execute()
+def get_service_operation(operation):
+    """Returns an operation."""
+    return sm.operations().get(name=operation).execute()

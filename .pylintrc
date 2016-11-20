@@ -1,0 +1,3 @@
+# pylint configuration file
+[MESSAGES CONTROL]
+disable=star-args

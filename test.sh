@@ -1,6 +1,6 @@
 #!/bin/sh
 
-./run.sh createProjects.py \
+./run.sh create_projects.py \
 	-t karlsson \
 	-o 548622027621 \
 	-b 00A539-93294F-AC9B6F \

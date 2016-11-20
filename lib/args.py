@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-"""Default functions for working with command-line arguments"""
+"""Default functions for working with command-line arguments."""
+
 
 def create_arg_parser():
     """Return an parser that handles all the arguments."""
-
     import argparse
 
     # create a new argument parser

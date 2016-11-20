@@ -2,9 +2,9 @@ apis:
   - compute_component
   - storage-component-json.googleapis.com
 
-billingAccount: 00A539-93294F-AC9B6F
+billing_account: 00A539-93294F-AC9B6F
 
-iamPolicy:
+iam_policy:
   owner:
     - user:sa-karlsson@broadinstitute.org
     - user:sa-teixeira@broadinstitute.org
@@ -20,8 +20,8 @@ labels:
 
 organization: 548622027621
 
-serviceAccounts:
+service_accounts:
   - cloudhealth
   - terraform
 
-usageBucket: karlsson-compute-usage
+usage_bucket: karlsson-compute-usage

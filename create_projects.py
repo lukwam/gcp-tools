@@ -2,21 +2,26 @@
 """Create Google Cloud Platform projects."""
 
 # import standard libraries
-import glob, re, sys, time, yaml
+import glob
+import re
+import sys
+import time
+import yaml
 
 # update path
 sys.path.insert(0, 'lib')
 
 from args import create_arg_parser
 
+
 def create_project(g, project_id, settings):
     """
 
-    Function: create_project
+    Function: create_project.
 
     description
 
-    Parameters:
+    Args:
 
       g          - [type/description]
       project_id - [type/description]
@@ -57,14 +62,15 @@ def create_project(g, project_id, settings):
     if result:
         print 'successful.'
 
+
 def create_service_accounts(g, project_id, settings):
     """
 
-    Function: create_service_accounts
+    Function: create_service_accounts.
 
     description
 
-    Parameters:
+    Args:
 
       g          - [type/description]
       project_id - [type/description]
@@ -84,14 +90,15 @@ def create_service_accounts(g, project_id, settings):
         if result:
             print 'successful.'
 
+
 def display_settings(settings):
     """
 
-    Function: display_settings
+    Function: display_settings.
 
     description
 
-    Parameters:
+    Args:
 
       settings - [type/description]
 
@@ -108,7 +115,7 @@ def display_settings(settings):
 
     if settings['apis']:
         print '   APIs: '
-        print '     - '+'\n     - '.join(settings['apis'])
+        print '     - ' + '\n     - '.join(settings['apis'])
 
     if settings['billingAccount']:
         print '   Billing: billingAccounts/%s...' % settings['billingAccount']
@@ -132,14 +139,15 @@ def display_settings(settings):
     if settings['usageBucket']:
         print '   Compute Usage Bucket: %s' % settings['usageBucket']
 
+
 def enable_billing(g, project_id, settings):
     """
 
-    Function: enable_billing
+    Function: enable_billing.
 
     description
 
-    Parameters:
+    Args:
 
       g          - [type/description]
       project_id - [type/description]
@@ -157,14 +165,15 @@ def enable_billing(g, project_id, settings):
     if result:
         print 'successful.'
 
+
 def enable_services(g, project_id, settings):
     """
 
-    Function: enable_services
+    Function: enable_services.
 
     description
 
-    Parameters:
+    Args:
 
       g          - [type/description]
       project_id - [type/description]
@@ -193,14 +202,15 @@ def enable_services(g, project_id, settings):
         else:
             print
 
+
 def enable_usage_bucket(g, project_id, settings):
     """
 
-    Function: enable_usage_bucket
+    Function: enable_usage_bucket.
 
     description
 
-    Parameters:
+    Args:
 
       g          - [type/description]
       project_id - [type/description]
@@ -220,14 +230,15 @@ def enable_usage_bucket(g, project_id, settings):
     else:
         print
 
+
 def get_bindings(iam_policy_args):
     """
 
-    Function: get_bindings
+    Function: get_bindings.
 
     description
 
-    Parameters:
+    Args:
 
       iam_policy_args - [type/description]
 
@@ -249,14 +260,15 @@ def get_bindings(iam_policy_args):
                 bindings[role].append(identity)
     return bindings
 
+
 def get_labels(labels_args):
     """
 
-    Function: get_labels
+    Function: get_labels.
 
     description
 
-    Parameters:
+    Args:
 
       labelsArgs - [type/description]
 
@@ -274,14 +286,15 @@ def get_labels(labels_args):
             labels[label] = value
     return labels
 
+
 def get_effective_settings(args):
     """
 
-    Function: get_effective_settings
+    Function: get_effective_settings.
 
     description
 
-    Parameters:
+    Args:
 
       args - [type/description]
 
@@ -349,14 +362,15 @@ def get_effective_settings(args):
 
     return settings
 
+
 def update_labels(g, project_id, settings):
     """
 
-    Function: update_labels
+    Function: update_labels.
 
     description
 
-    Parameters:
+    Args:
 
       g          - [type/description]
       project_id - [type/description]
@@ -382,9 +396,9 @@ def update_labels(g, project_id, settings):
     if result:
         print 'successful.'
 
+
 def main():
     """Main function."""
-
     # create arg parser
     parser = create_arg_parser()
 
@@ -392,8 +406,9 @@ def main():
     args = parser.parse_args()
 
     # check args
+    folder_error = 'Provide either an organization or a folder, but not both.'
     if args.organization and args.folder:
-        print 'ERROR: Provide either an organization or a folder, but not both.'
+        print 'ERROR: %s' % folder_error
         sys.exit(1)
 
     # connect to google
@@ -435,6 +450,7 @@ def main():
         # compute usage bucket
         if settings['usageBucket']:
             enable_usage_bucket(g, project_id, settings)
+
 
 if __name__ == "__main__":
     main()

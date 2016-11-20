@@ -23,10 +23,11 @@ logging.basicConfig(filename='debug.log', level=logging.DEBUG)
 # build a resource manager service
 cb = build('cloudbilling', 'v1', credentials=credentials)
 
+
 def enable_project_billing(project_id, billing_account_name):
     """
 
-    Function: enable_project_billing
+    Function: enable_project_billing.
 
     Google Cloud Billing API - projects().updateBillingInfo()
 
@@ -39,7 +40,6 @@ def enable_project_billing(project_id, billing_account_name):
 
       return response
     """
-
     body = {
         'project_id': project_id,
         'billingAccountName': billing_account_name,
@@ -53,10 +53,11 @@ def enable_project_billing(project_id, billing_account_name):
 
     return cb.projects().updateBillingInfo(**params).execute()
 
+
 def get_billing_accounts():
     """
 
-    Function: get_billing_accounts
+    Function: get_billing_accounts.
 
     Google Cloud Billing API - billingAccounts().list()
 
@@ -87,12 +88,15 @@ def get_billing_accounts():
 #
 # Compute
 #
+
+
 compute = build('compute', 'v1', credentials=credentials)
+
 
 def set_project_usgae_export_bucket(project_id, bucket_name):
     """
 
-    Function: set_project_usgae_export_bucket
+    Function: set_project_usgae_export_bucket.
 
     description
 
@@ -101,7 +105,7 @@ def set_project_usgae_export_bucket(project_id, bucket_name):
       project_id  - [type/description]
       bucket_name - [type/description]
 
-    Returns:
+    Return:
 
       return description
     """
@@ -120,32 +124,38 @@ def set_project_usgae_export_bucket(project_id, bucket_name):
 #
 # Cloud Resource Manager (cloudresourcemanager)
 #
+
+
 crm = build('cloudresourcemanager', 'v1', credentials=credentials)
 
+
 def create_project(project):
-    """Returns a created project."""
+    """Return a created project."""
     try:
         return crm.projects().create(body=project).execute()
     except Exception as exception:
         print '[%s]' % exception._get_reason()
         return {}
 
+
 def get_organizations():
-    """Returns a list of organizations."""
+    """Return a list of organizations."""
     # create a request to list organizations
     response = crm.organizations().search(body={}).execute()
 
     return response['organizations']
 
+
 def get_project(project_id):
-    """Returns a project."""
+    """Return a project."""
     # create a request to list projects
     return crm.projects().get(projectId=project_id).execute()
+
 
 def get_projects():
     """
 
-    Function: get_projects
+    Function: get_projects.
 
     description
 
@@ -173,8 +183,9 @@ def get_projects():
 
     return projects
 
+
 def update_project(project_id, body):
-    """Returns an updated project."""
+    """Return an updated project."""
     try:
         return crm.projects().update(projectId=project_id, body=body).execute()
     except Exception as exception:
@@ -183,12 +194,15 @@ def update_project(project_id, body):
 #
 # IAM (Identity and Access Management)
 #
+
+
 iam = build('iam', 'v1', credentials=credentials)
+
 
 def create_service_account(project_id, account_id, display_name=None):
     """
 
-    Function: create_service_account
+    Function: create_service_account.
 
     description
 
@@ -225,16 +239,20 @@ def create_service_account(project_id, account_id, display_name=None):
 #
 # Service Management
 #
+
+
 sm = build('servicemanagement', 'v1', credentials=credentials)
 
+
 def enable_project_service(project_id, service_name):
-    """Returns an enabled project service response."""
+    """Return an enabled project service response."""
     body = {
         'consumerId': 'project:%s' % project_id
     }
 
     return sm.services().enable(serviceName=service_name, body=body).execute()
 
+
 def get_service_operation(operation):
-    """Returns an operation."""
+    """Return an operation."""
     return sm.operations().get(name=operation).execute()

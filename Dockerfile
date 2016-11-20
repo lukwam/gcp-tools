@@ -6,6 +6,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get -yq update \
 	&& apt-get -yq upgrade
 
+# install apt-get apps
+RUN apt-get install -y pylint
+
 # clean up after apt-get
 RUN apt-get -y autoremove \
 	&& apt-get -y -q clean \

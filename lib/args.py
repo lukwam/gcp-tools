@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Default functions for working with command-line arguments."""
+"""Functions for working with command-line arguments."""
 
 
 def create_arg_parser():

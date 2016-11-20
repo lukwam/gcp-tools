@@ -9,12 +9,15 @@ import time
 import yaml
 
 # update path
-sys.path.insert(0, 'lib')
+# sys.path.insert(0, 'lib')
 
-from args import create_arg_parser
+from lib.args import create_arg_parser
+from lib.google import Google
+
+google = Google()
 
 
-def create_project(g, project_id, settings):
+def create_project(project_id, settings):
     """
 
     Function: create_project.
@@ -23,7 +26,6 @@ def create_project(g, project_id, settings):
 
     Args:
 
-      g          - [type/description]
       project_id - [type/description]
       settings   - [type/description]
 
@@ -58,12 +60,12 @@ def create_project(g, project_id, settings):
     sys.stdout.write('   * creating project: %s...' % project_id)
     sys.stdout.flush()
 
-    result = g.create_project(project)
+    result = google.create_project(project)
     if result:
         print 'successful.'
 
 
-def create_service_accounts(g, project_id, settings):
+def create_service_accounts(project_id, settings):
     """
 
     Function: create_service_accounts.
@@ -72,7 +74,6 @@ def create_service_accounts(g, project_id, settings):
 
     Args:
 
-      g          - [type/description]
       project_id - [type/description]
       settings   - [type/description]
 
@@ -80,13 +81,13 @@ def create_service_accounts(g, project_id, settings):
 
       return description
     """
-    service_accounts = settings['serviceAccounts']
+    service_accounts = settings['service_accounts']
 
     print '   * creating service accounts:'
     for account_id in service_accounts:
         sys.stdout.write('     - %s...' % account_id)
         sys.stdout.flush()
-        result = g.create_service_account(project_id, account_id)
+        result = google.create_service_account(project_id, account_id)
         if result:
             print 'successful.'
 
@@ -117,30 +118,30 @@ def display_settings(settings):
         print '   APIs: '
         print '     - ' + '\n     - '.join(settings['apis'])
 
-    if settings['billingAccount']:
-        print '   Billing: billingAccounts/%s...' % settings['billingAccount']
+    if settings['billing_account']:
+        print '   Billing: billingAccounts/%s...' % settings['billing_account']
 
-    if settings['iamPolicy']:
+    if settings['iam_policy']:
         print '   IAM Policy:'
-        for role in sorted(settings['iamPolicy']):
+        for role in sorted(settings['iam_policy']):
             print '     %s:' % role
-            for i in sorted(settings['iamPolicy'][role]):
+            for i in sorted(settings['iam_policy'][role]):
                 print '      - %s' % i
 
     if settings['labels']:
         print '   Labels:'
-        for l in sorted(settings['labels']):
-            print '     %s: %s' % (l, settings['labels'][l])
+        for label in sorted(settings['labels']):
+            print '     %s: %s' % (label, settings['labels'][label])
 
-    if settings['serviceAccounts']:
+    if settings['service_accounts']:
         print '   Service Accounts:'
-        print '     - '+'\n     - '.join(settings['serviceAccounts'])
+        print '     - '+'\n     - '.join(settings['service_accounts'])
 
-    if settings['usageBucket']:
-        print '   Compute Usage Bucket: %s' % settings['usageBucket']
+    if settings['usage_bucket']:
+        print '   Compute Usage Bucket: %s' % settings['usage_bucket']
 
 
-def enable_billing(g, project_id, settings):
+def enable_billing(project_id, settings):
     """
 
     Function: enable_billing.
@@ -149,7 +150,6 @@ def enable_billing(g, project_id, settings):
 
     Args:
 
-      g          - [type/description]
       project_id - [type/description]
       settings   - [type/description]
 
@@ -157,16 +157,16 @@ def enable_billing(g, project_id, settings):
 
       return description
     """
-    billing_account = 'billingAccounts/%s' % settings['billingAccount']
+    billing_account = 'billingAccounts/%s' % settings['billing_account']
 
     sys.stdout.write('   * enabling billing: %s...' % billing_account)
     sys.stdout.flush()
-    result = g.enable_project_billing(project_id, '%s' % billing_account)
+    result = google.enable_project_billing(project_id, '%s' % billing_account)
     if result:
         print 'successful.'
 
 
-def enable_services(g, project_id, settings):
+def enable_services(project_id, settings):
     """
 
     Function: enable_services.
@@ -175,7 +175,6 @@ def enable_services(g, project_id, settings):
 
     Args:
 
-      g          - [type/description]
       project_id - [type/description]
       settings   - [type/description]
 
@@ -189,11 +188,11 @@ def enable_services(g, project_id, settings):
     for service_name in apis:
         sys.stdout.write('     - %s...' % service_name)
         sys.stdout.flush()
-        operation = g.enable_project_service(project_id, service_name)
-        if operation:
+        response = google.enable_project_service(project_id, service_name)
+        if response:
             while True:
-                op = g.get_service_operation(operation['name'])
-                if 'done' in op and op['done']:
+                operation = google.get_service_operation(response['name'])
+                if 'done' in operation and operation['done']:
                     break
                 sys.stdout.write('.')
                 sys.stdout.flush()
@@ -203,7 +202,7 @@ def enable_services(g, project_id, settings):
             print
 
 
-def enable_usage_bucket(g, project_id, settings):
+def enable_usage_bucket(project_id, settings):
     """
 
     Function: enable_usage_bucket.
@@ -212,7 +211,6 @@ def enable_usage_bucket(g, project_id, settings):
 
     Args:
 
-      g          - [type/description]
       project_id - [type/description]
       settings   - [type/description]
 
@@ -220,11 +218,11 @@ def enable_usage_bucket(g, project_id, settings):
 
       return description
     """
-    usage_bucket = settings['usageBucket']
+    usage_bucket = settings['usage_bucket']
     message = 'enabling compute usage export'
     sys.stdout.write('   * %s: gs://%s/...' % (message, usage_bucket))
     sys.stdout.flush()
-    result = g.set_project_usgae_export_bucket(project_id, usage_bucket)
+    result = google.set_project_usgae_export_bucket(project_id, usage_bucket)
     if result:
         print 'successful.'
     else:
@@ -280,10 +278,10 @@ def get_labels(labels_args):
         return None
 
     labels = {}
-    for l in labels_args.split(','):
-        if re.search('=', l):
-            (label, value) = l.split('=')
-            labels[label] = value
+    for label in labels_args.split(','):
+        if re.search('=', label):
+            (name, value) = label.split('=')
+            labels[name] = value
     return labels
 
 
@@ -305,14 +303,14 @@ def get_effective_settings(args):
     # set defaults
     settings = {
         'apis': None,
-        'billingAccount': None,
+        'billing_account': None,
         'folder': None,
-        'iamPolicy': None,
+        'iam_policy': None,
         'labels': None,
         'organization': None,
-        'serviceAccounts': None,
+        'service_accounts': None,
         'template': None,
-        'usageBucket': None,
+        'usage_bucket': None,
     }
 
     # print json.dumps(settings, indent=2, sort_keys=True)
@@ -335,9 +333,9 @@ def get_effective_settings(args):
 
         # apply template values to settings
         for doc in docs:
-            for k, v in doc.items():
+            for key, value in doc.items():
                 # print k+' --> '+str(v)
-                settings[k] = v
+                settings[key] = value
             # print
 
     # print json.dumps(settings, indent=2, sort_keys=True)
@@ -346,24 +344,24 @@ def get_effective_settings(args):
     if args.apis:
         settings['apis'] = sorted(args.apis.split(','))
     if args.billing_account:
-        settings['billingAccount'] = args.billing_account
+        settings['billing_account'] = args.billing_account
     if args.folder:
         settings['folder'] = args.folder
     if args.iam_policy:
-        settings['iamPolicy'] = get_bindings(args.iam_policy)
+        settings['iam_policy'] = get_bindings(args.iam_policy)
     if args.labels:
         settings['labels'] = get_labels(args.labels)
     if args.organization:
         settings['organization'] = args.organization
     if args.service_accounts:
-        settings['serviceAccounts'] = sorted(args.service_accounts.split(','))
+        settings['service_accounts'] = sorted(args.service_accounts.split(','))
     if args.usage_bucket:
-        settings['usageBucket'] = args.usage_bucket
+        settings['usage_bucket'] = args.usage_bucket
 
     return settings
 
 
-def update_labels(g, project_id, settings):
+def update_labels(project_id, settings):
     """
 
     Function: update_labels.
@@ -372,7 +370,6 @@ def update_labels(g, project_id, settings):
 
     Args:
 
-      g          - [type/description]
       project_id - [type/description]
       settings   - [type/description]
 
@@ -385,14 +382,14 @@ def update_labels(g, project_id, settings):
     sys.stdout.write('   * updating labels: %s...' % labels)
     sys.stdout.flush()
 
-    project = g.get_project(project_id)
+    project = google.get_project(project_id)
     if 'labels' not in project:
         project['labels'] = {}
-    for l in labels:
-        if re.search('.=.', l):
-            (k, v) = l.split('=')
-            project['labels'][k.lower()] = v
-    result = g.update_project(project_id, project)
+    for label in labels:
+        if re.search('.=.', label):
+            (key, value) = label.split('=')
+            project['labels'][key.lower()] = value
+    result = google.update_project(project_id, project)
     if result:
         print 'successful.'
 
@@ -414,7 +411,9 @@ def main():
     # connect to google
     sys.stdout.write('Connecting to Google with default credentials...')
     sys.stdout.flush()
-    import google as g
+
+    # authenticate via the gcloud application-default credentials
+    google.auth()
     print 'successful.'
 
     # get effective settings
@@ -429,27 +428,27 @@ def main():
         print '\n %s:' % project_id
 
         # create the project
-        create_project(g, project_id, settings)
+        create_project(project_id, settings)
 
         # create project labels
-        if settings['serviceAccounts']:
-            create_service_accounts(g, project_id, settings)
+        if settings['service_accounts']:
+            create_service_accounts(project_id, settings)
 
         # create project labels
         if settings['labels']:
-            update_labels(g, project_id, settings)
+            update_labels(project_id, settings)
 
         # enable billing
-        if settings['billingAccount']:
-            enable_billing(g, project_id, settings)
+        if settings['billing_account']:
+            enable_billing(project_id, settings)
 
         # apis
         if settings['apis']:
-            enable_services(g, project_id, settings)
+            enable_services(project_id, settings)
 
         # compute usage bucket
-        if settings['usageBucket']:
-            enable_usage_bucket(g, project_id, settings)
+        if settings['usage_bucket']:
+            enable_usage_bucket(project_id, settings)
 
 
 if __name__ == "__main__":

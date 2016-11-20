@@ -1,28 +1,28 @@
 #!/usr/bin/env python
-
-# import standard libraries
-import sys
-
-# update path
-sys.path.insert(0, 'lib')
+"""Display a report of GCP resources."""
 
 # import modules
-import google as g
+from lib.google import Google
 
 
 def main():
+    """Main function."""
+    # authenticate to google
+    print 'Authenticating to Google...'
+    google = Google()
+    google.auth()
 
     print 'Getting data from GCP...'
 
     print '   * organizations...'
-    organizations = g.getOrganizations()
+    organizations = google.get_organizations()
     print '   * billing accounts...'
-    billingAccounts = g.getBillingAccounts()
+    billing_accounts = google.get_billing_accounts()
     print '   * projects...'
-    projects = g.getProjects()
+    projects = google.get_projects()
 
     print '\nOrganizations (%s)' % str(len(organizations))
-    print 'Billing Accounts (%s)' % str(len(billingAccounts))
+    print 'Billing Accounts (%s)' % str(len(billing_accounts))
     print 'Projects (%s)' % str(len(projects))
 
 

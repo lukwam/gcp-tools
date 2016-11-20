@@ -1,3 +1,6 @@
 # pylint configuration file
+[Master]
+init-hook='import sys; sys.path.append("/usr/local/lib/python2.7/site-packages")'
+
 [MESSAGES CONTROL]
-disable=star-args
+disable=maybe-no-member,star-args

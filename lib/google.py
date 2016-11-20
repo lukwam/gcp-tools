@@ -204,7 +204,7 @@ class Google(object):
         return projects
 
     def update_project(self, project_id, body):
-        """Return an updated project."""
+        """Return an updated project resource."""
         params = {
             'projectId': project_id,
             'body': body,

@@ -171,7 +171,10 @@ class Google(object):
         org_search = self.crm.organizations().search(body={})
         response = org_search.execute()
 
-        return response['organizations']
+        if 'organizations' in response:
+            return response['organizations']
+
+        return []
 
     def get_project(self, project_id):
         """Return a project."""

@@ -17,7 +17,7 @@ Requires Google Cloud SDK. If not already installed, install here:
 
 https://cloud.google.com/sdk/
 
-Make sure your gcloud client is up-to-date:
+Make sure your gcloud client is up-to-date (precede with "sudo" if you are not logged in as root.):
 
 `gcloud components update`
 

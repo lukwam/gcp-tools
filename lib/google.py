@@ -2,6 +2,8 @@
 """Classes for calling Google APIs."""
 
 # import modules
+from apiclient import http as apihttp
+import io
 import json
 import logging
 
@@ -27,6 +29,7 @@ class Google(object):
         self.crm = None
         self.iam = None
         self.smgt = None
+        self.storage = None
 
     def auth(self):
         """Athenticate with gcloud application-default credentials."""
@@ -51,6 +54,9 @@ class Google(object):
 
         # build a service management API service
         self.smgt = build('servicemanagement', 'v1', credentials=credentials)
+
+        # build a service management API service
+        self.storage = build('storage', 'v1', credentials=credentials)
 
     #
     # Cloud Billing API (cloudbilling)
@@ -281,3 +287,28 @@ class Google(object):
     def get_service_operation(self, operation):
         """Return an operation."""
         return self.smgt.operations().get(name=operation).execute()
+
+    #
+    # Storage API (storage)
+    #
+    def get_bucket_object(self, bucket_name, object_name):
+
+        params = {
+            'bucket': bucket_name,
+            'object': object_name,
+        }
+
+        # get the storage object media
+        request = self.storage.objects().get_media(**params)
+
+        # The BytesIO object may be replaced with any io.Base instance.
+        media = io.BytesIO()
+
+        # create downloader
+        downloader = apihttp.MediaIoBaseDownload(media, request, chunksize=1024*1024)
+
+        done = False
+        while not done:
+            status, done = downloader.next_chunk()
+
+        return media

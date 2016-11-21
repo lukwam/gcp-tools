@@ -110,36 +110,36 @@ def display_settings(settings):
     print '\nSettings:\n'
     for key in sorted(settings):
 
-        if key in ['organization']:
+        if key in ['organization'] and settings[key]:
             print '   Parent: organizations/%s...' % settings[key]
 
-        elif key in ['folder']:
+        elif key in ['folder'] and settings[key]:
             print '   Parent: folders/%s...' % settings[key]
 
-        elif key in ['apis']:
+        elif key in ['apis'] and settings[key]:
             print '   APIs: '
             print '     - ' + '\n     - '.join(settings[key])
 
-        elif key in ['billing_account']:
+        elif key in ['billing_account'] and settings[key]:
             print '   Billing: billingAccounts/%s...' % settings[key]
 
-        elif key in ['iam_policy']:
+        elif key in ['iam_policy'] and settings[key]:
             print '   IAM Policy:'
             for role in sorted(settings[key]):
                 print '     %s:' % role
                 for i in sorted(settings[key][role]):
                     print '      - %s' % i
 
-        elif key in ['labels']:
+        elif key in ['labels'] and settings[key]:
             print '   Labels:'
             for label in sorted(settings[key]):
                 print '     %s: %s' % (label, settings[key][label])
 
-        elif key in ['service_accounts']:
+        elif key in ['service_accounts'] and settings[key]:
             print '   Service Accounts:'
             print '     - '+'\n     - '.join(settings[key])
 
-        elif key in ['usage_bucket']:
+        elif key in ['usage_bucket'] and settings[key]:
             print '   Compute Usage Bucket: %s' % settings[key]
 
 
@@ -320,6 +320,14 @@ def get_effective_settings(args):
     # check for template
     if args.template:
         print '\nLoading template: %s...' % args.template
+
+        # check if file is a gs:// path
+        if re.match('gs:', args.template):
+            # print args.template
+            bucket_name = args.template.split('/')[2]
+            object_name = '/'.join(args.template.split('/')[3:])
+            print bucket_name
+            print object_name
 
         # look for template in templates directory
         template_files = glob.glob('templates/%s.yml' % args.template)

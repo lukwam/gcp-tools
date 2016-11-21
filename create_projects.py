@@ -33,8 +33,8 @@ def create_project(project_id, settings):
 
       return description
     """
-    organization = str(settings['organization'])
-    folder = str(settings['folder'])
+    organization = settings['organization']
+    folder = settings['folder']
 
     # labels = settings['labels']
 
@@ -45,12 +45,12 @@ def create_project(project_id, settings):
 
     if organization:
         project['parent'] = {
-            'id': organization.replace('organizations/', ''),
+            'id': str(organization).replace('organizations/', ''),
             'type': 'organization',
         }
     elif folder:
         project['parent'] = {
-            'id': folder.replace('folders/', ''),
+            'id': str(folder).replace('folders/', ''),
             'type': 'folder',
         }
 
@@ -326,8 +326,7 @@ def get_effective_settings(args):
             # print args.template
             bucket_name = args.template.split('/')[2]
             object_name = '/'.join(args.template.split('/')[3:])
-            print bucket_name
-            print object_name
+            print google.get_bucket_object(bucket_name, object_name)
 
         # look for template in templates directory
         template_files = glob.glob('templates/%s.yml' % args.template)

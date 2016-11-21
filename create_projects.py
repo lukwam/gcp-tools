@@ -108,37 +108,39 @@ def display_settings(settings):
       return description
     """
     print '\nSettings:\n'
+    for key in sorted(settings):
 
-    if settings['organization']:
-        print '   Parent: organizations/%s...' % settings['organization']
-    elif settings['folder']:
-        print '   Parent: folders/%s...' % settings['folder']
+        if key in ['organization']:
+            print '   Parent: organizations/%s...' % settings[key]
 
-    if settings['apis']:
-        print '   APIs: '
-        print '     - ' + '\n     - '.join(settings['apis'])
+        elif key in ['folder']:
+            print '   Parent: folders/%s...' % settings[key]
 
-    if settings['billing_account']:
-        print '   Billing: billingAccounts/%s...' % settings['billing_account']
+        elif key in ['apis']:
+            print '   APIs: '
+            print '     - ' + '\n     - '.join(settings[key])
 
-    if settings['iam_policy']:
-        print '   IAM Policy:'
-        for role in sorted(settings['iam_policy']):
-            print '     %s:' % role
-            for i in sorted(settings['iam_policy'][role]):
-                print '      - %s' % i
+        elif key in ['billing_account']:
+            print '   Billing: billingAccounts/%s...' % settings[key]
 
-    if settings['labels']:
-        print '   Labels:'
-        for label in sorted(settings['labels']):
-            print '     %s: %s' % (label, settings['labels'][label])
+        elif key in ['iam_policy']:
+            print '   IAM Policy:'
+            for role in sorted(settings[key]):
+                print '     %s:' % role
+                for i in sorted(settings[key][role]):
+                    print '      - %s' % i
 
-    if settings['service_accounts']:
-        print '   Service Accounts:'
-        print '     - '+'\n     - '.join(settings['service_accounts'])
+        elif key in ['labels']:
+            print '   Labels:'
+            for label in sorted(settings[key]):
+                print '     %s: %s' % (label, settings[key][label])
 
-    if settings['usage_bucket']:
-        print '   Compute Usage Bucket: %s' % settings['usage_bucket']
+        elif key in ['service_accounts']:
+            print '   Service Accounts:'
+            print '     - '+'\n     - '.join(settings[key])
+
+        elif key in ['usage_bucket']:
+            print '   Compute Usage Bucket: %s' % settings[key]
 
 
 def enable_billing(project_id, settings):

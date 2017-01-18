@@ -471,7 +471,7 @@ def set_default_service_account(project_id, settings):
       return description
     """
     service_account = settings['default_service_account']
-    print service_account
+
     if not re.search('@', service_account):
         domain = 'iam.gserviceaccount.com'
         service_account = '%s@%s.%s' % (service_account, project_id, domain)

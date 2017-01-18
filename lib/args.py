@@ -68,7 +68,7 @@ def create_arg_parser():
         '--region',
         action='store',
         default=None,
-        help='Default Compute Region (ex. us-central)'
+        help='Default Compute Region (ex. us-central1)'
     )
 
     parser.add_argument(
@@ -100,7 +100,7 @@ def create_arg_parser():
         '--zone',
         action='store',
         default=None,
-        help='Default Compute Zone (ex. us-central-1a)'
+        help='Default Compute Zone (ex. us-central1-a)'
     )
 
     # at least project_id is required

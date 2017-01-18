@@ -25,7 +25,10 @@ folder: 538415940587
 
 service_accounts:
   - cloudhealth
+  - default
   - terraform
+
+# default_service_account: default
 
 usage_bucket: karlsson-compute-usage
 

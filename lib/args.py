@@ -29,6 +29,14 @@ def create_arg_parser():
     )
 
     parser.add_argument(
+        '-d',
+        '--default_service_account',
+        action='store',
+        default=None,
+        help='Default Service Account (ex. username@project)'
+    )
+
+    parser.add_argument(
         '-f',
         '--folder',
         action='store',

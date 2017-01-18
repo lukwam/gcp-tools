@@ -27,6 +27,7 @@ class Google(object):
         """Initialize."""
         self.billing = None
         self.compute = None
+        self.compute_alpha = None
         self.crm = None
         self.iam = None
         self.smgt = None
@@ -46,6 +47,7 @@ class Google(object):
 
         # build a compute API service
         self.compute = build('compute', 'v1', credentials=credentials)
+        self.compute_alpha = build('compute', 'alpha', credentials=credentials)
 
         # build a cloud resource manager API service
         self.crm = build('cloudresourcemanager', 'v1', credentials=credentials)
@@ -166,10 +168,36 @@ class Google(object):
         projects = self.compute.projects()
         return projects.setCommonInstanceMetadata(**params).execute()
 
-    def set_project_usgae_export_bucket(self, project_id, bucket_name):
+    def set_default_service_account(self, project_id, service_account):
         """
 
-        Function: set_project_usgae_export_bucket.
+        Function: set_default_service_account.
+
+        description
+
+        Parameters:
+
+          project_id  - [type/description]
+          service_account - [type/description]
+
+        Return:
+
+          return description
+        """
+        params = {
+            'project': project_id,
+            'body': {
+                'email': service_account,
+            },
+        }
+        print params
+        projects = self.compute_alpha.projects()
+        return projects.setDefaultServiceAccount(**params).execute()
+
+    def set_project_usage_export_bucket(self, project_id, bucket_name):
+        """
+
+        Function: set_project_usage_export_bucket.
 
         description
 

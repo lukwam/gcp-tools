@@ -66,8 +66,8 @@ def create_project(project_id, settings):
 
       return description
     """
-    organization = settings['organization']
-    folder = settings['folder']
+    # organization = settings['organization']
+    # folder = settings['folder']
 
     # labels = settings['labels']
 
@@ -292,7 +292,7 @@ def enable_usage_bucket(project_id, settings):
     message = 'enabling compute usage export'
     sys.stdout.write('   * %s: gs://%s/...' % (message, usage_bucket))
     sys.stdout.flush()
-    result = google.set_project_usgae_export_bucket(project_id, usage_bucket)
+    result = google.set_project_usage_export_bucket(project_id, usage_bucket)
     if result:
         print 'successful.'
     else:
@@ -374,13 +374,16 @@ def get_effective_settings(args):
     settings = {
         'apis': None,
         'billing_account': None,
+        'default_service_account': None,
         'folder': None,
         'iam_policy': None,
         'labels': None,
         'organization': None,
+        'region': None,
         'service_accounts': None,
         'template': None,
         'usage_bucket': None,
+        'zone': None,
     }
 
     # print json.dumps(settings, indent=2, sort_keys=True)
@@ -436,6 +439,38 @@ def get_effective_settings(args):
         settings['usage_bucket'] = args.usage_bucket
 
     return settings
+
+
+def set_default_service_account(project_id, settings):
+    """
+
+    Function: set_default_service_account.
+
+    description
+
+    Args:
+
+      project_id - [type/description]
+      settings   - [type/description]
+
+    Returns:
+
+      return description
+    """
+    service_account = settings['default_service_account']
+    print service_account
+    if not re.search('@', service_account):
+        domain = 'iam.gserviceaccount.com'
+        service_account = '%s@%s.%s' % (service_account, project_id, domain)
+
+    sys.stdout.write('   * setting default service account: %s...' %
+                     service_account)
+    sys.stdout.flush()
+
+    result = google.set_default_service_account(project_id, service_account)
+    if result:
+        print 'successful.'
+        print result
 
 
 def set_iam_policy(project_id, settings):
@@ -548,16 +583,16 @@ def update_project_metadata(project_id, settings):
                 metadata_dict[key] = value
 
         if region and (
-            ('google-compute-default-region' in metadata_dict
-                and metadata_dict['google-compute-default-region'] != region)
-            or 'google-compute-default-region' not in metadata_dict
+                ('google-compute-default-region' in metadata_dict and
+                 metadata_dict['google-compute-default-region'] != region)
+                or 'google-compute-default-region' not in metadata_dict
         ):
             update = True
 
         if zone and (
-            ('google-compute-default-zone' in metadata_dict
-                and metadata_dict['google-compute-default-zone'] != zone)
-            or 'google-compute-default-zone' not in metadata_dict
+                ('google-compute-default-zone' in metadata_dict and
+                 metadata_dict['google-compute-default-zone'] != zone)
+                or 'google-compute-default-zone' not in metadata_dict
         ):
             update = True
 
@@ -670,6 +705,10 @@ def main():
 
         # check if compute api is enabled
         if 'compute_component' in apis:
+
+            # default service account
+            if settings['default_service_account']:
+                set_default_service_account(project_id, settings)
 
             # compute usage bucket
             if settings['usage_bucket']:

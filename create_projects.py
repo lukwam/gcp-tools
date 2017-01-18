@@ -226,8 +226,9 @@ def enable_billing(project_id, settings):
       return description
     """
     billing_account = 'billingAccounts/%s' % settings['billing_account']
+    billing_string = settings['billing_account']
 
-    sys.stdout.write('   * enabling billing: %s...' % billing_account)
+    sys.stdout.write('   * enabling billing: %s...' % billing_string)
     sys.stdout.flush()
     result = google.enable_project_billing(project_id, '%s' % billing_account)
     if result:

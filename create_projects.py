@@ -86,8 +86,15 @@ def create_project(project_id, settings):
 
     result = google.create_project(project)
     if result:
-        time.sleep(1)
+        created = False
+        while not created:
+            try:
+                project = google.get_project(project_id)
+                created = True
+            except:
+                created = False
         print 'successful.'
+
     return result
 
 

@@ -1,2 +1,3 @@
 *.pyc
+debug.log
 logs/debug.log

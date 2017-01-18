@@ -190,7 +190,6 @@ class Google(object):
                 'email': service_account,
             },
         }
-        print params
         projects = self.compute_alpha.projects()
         return projects.setDefaultServiceAccount(**params).execute()
 

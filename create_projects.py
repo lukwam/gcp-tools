@@ -17,6 +17,39 @@ from lib.google import Google
 google = Google()
 
 
+def get_parent(settings):
+    """
+
+    Function: get_parent.
+
+    description
+
+    Args:
+
+      project_id - [type/description]
+      settings   - [type/description]
+
+    Returns:
+
+      return description
+    """
+    organization = settings['organization']
+    folder = settings['folder']
+    parent = None
+
+    if organization:
+        parent = {
+            'id': str(organization).replace('organizations/', ''),
+            'type': 'organization',
+        }
+    elif folder:
+        parent = {
+            'id': str(folder).replace('folders/', ''),
+            'type': 'folder',
+        }
+    return parent
+
+
 def create_project(project_id, settings):
     """
 
@@ -43,16 +76,7 @@ def create_project(project_id, settings):
         'name': project_id,
     }
 
-    if organization:
-        project['parent'] = {
-            'id': str(organization).replace('organizations/', ''),
-            'type': 'organization',
-        }
-    elif folder:
-        project['parent'] = {
-            'id': str(folder).replace('folders/', ''),
-            'type': 'folder',
-        }
+    project['parent'] = get_parent(settings)
 
     # if labels:
     #   project['labels'] = labels
@@ -63,6 +87,7 @@ def create_project(project_id, settings):
     result = google.create_project(project)
     if result:
         print 'successful.'
+    return result
 
 
 def create_service_accounts(project_id, settings):
@@ -88,6 +113,33 @@ def create_service_accounts(project_id, settings):
         sys.stdout.write('     - %s...' % account_id)
         sys.stdout.flush()
         result = google.create_service_account(project_id, account_id)
+        if result:
+            print 'successful.'
+
+
+def create_usage_bucket(project_id, settings):
+    """
+
+    Function: create_usage_bucket.
+
+    description
+
+    Args:
+
+      project_id - [type/description]
+      settings   - [type/description]
+
+    Returns:
+
+      return description
+    """
+    usage_bucket = settings['usage_bucket']
+    try:
+        google.get_bucket(usage_bucket)
+    except:
+        sys.stdout.write('   * creating usage bucket: %s...' % usage_bucket)
+        sys.stdout.flush()
+        result = google.create_bucket(project_id, usage_bucket)
         if result:
             print 'successful.'
 
@@ -370,6 +422,45 @@ def get_effective_settings(args):
     return settings
 
 
+def set_iam_policy(project_id, settings):
+    """
+
+    Function: set_iam_policy.
+
+    description
+
+    Args:
+
+      project_id - [type/description]
+      settings   - [type/description]
+
+    Returns:
+
+      return description
+    """
+    iam_policy = settings['iam_policy']
+
+    policy = {
+        'bindings': []
+    }
+
+    for role in iam_policy:
+        binding = {
+            'role': 'roles/%s' % (role),
+            'members': [],
+        }
+        for member in iam_policy[role]:
+            binding['members'].append(member)
+        policy['bindings'].append(binding)
+
+    sys.stdout.write('   * updating IAM policy...')
+    sys.stdout.flush()
+
+    result = google.set_iam_policy(project_id, policy)
+    if result:
+        print 'successful.'
+
+
 def update_labels(project_id, settings):
     """
 
@@ -387,8 +478,11 @@ def update_labels(project_id, settings):
       return description
     """
     labels = settings['labels']
+    labels_list = []
+    for label in sorted(labels):
+        labels_list.append('%s=%s' % (label, labels[label]))
 
-    sys.stdout.write('   * updating labels: %s...' % labels)
+    sys.stdout.write('   * updating labels: %s...' % ','.join(labels_list))
     sys.stdout.flush()
 
     project = google.get_project(project_id)
@@ -437,11 +531,34 @@ def main():
         print '\n %s:' % project_id
 
         # create the project
-        create_project(project_id, settings)
+        result = create_project(project_id, settings)
 
-        # create project labels
+        # check if project aready exists
+        if not result:
+            result = google.get_project(project_id)
+
+            # check parent
+            current_parent = None
+            if 'parent' in result:
+                current_parent = result['parent']
+
+            parent = get_parent(settings)
+
+            if current_parent != parent:
+                parent_string = '%ss/%s' % (parent['type'], parent['id'])
+                sys.stdout.write('   * updating parent: %s...' % parent_string)
+                sys.stdout.flush()
+                update = google.update_project(project_id, {'parent': parent})
+                if update:
+                    print 'successful.'
+
+        # create service accounts
         if settings['service_accounts']:
             create_service_accounts(project_id, settings)
+
+        # set IAM policies
+        if settings['iam_policy']:
+            set_iam_policy(project_id, settings)
 
         # create project labels
         if settings['labels']:
@@ -451,13 +568,17 @@ def main():
         if settings['billing_account']:
             enable_billing(project_id, settings)
 
-        # apis
+        # enable apis
         if settings['apis']:
             enable_services(project_id, settings)
 
         # compute usage bucket
         if settings['usage_bucket']:
+            create_usage_bucket(project_id, settings)
             enable_usage_bucket(project_id, settings)
+
+        base = 'https://console.cloud.google.com/home/dashboard?project='
+        print '   * console: %s%s' % (base, project_id)
 
 
 if __name__ == "__main__":

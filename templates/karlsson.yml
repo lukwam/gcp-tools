@@ -1,6 +1,6 @@
 apis:
   - compute_component
-  - storage-component-json.googleapis.com
+  - storage-api.googleapis.com
 
 billing_account: 00A539-93294F-AC9B6F
 
@@ -9,16 +9,19 @@ iam_policy:
     - user:sa-karlsson@broadinstitute.org
     - user:sa-teixeira@broadinstitute.org
   editor:
-    - user:karlsson@broadinstitute.org
     - group:devops@broadinstitute.org
+    - user:karlsson@broadinstitute.org
   viewer:
     - group:bits@broadinstitute.org
+    - user:lukwam@gmail.com
 
 labels:
   costobject: broad-1550167
   environment: testing
 
-organization: 548622027621
+# organization: 548622027621
+
+folder: 538415940587
 
 service_accounts:
   - cloudhealth

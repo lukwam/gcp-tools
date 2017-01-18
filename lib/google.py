@@ -2,10 +2,11 @@
 """Classes for calling Google APIs."""
 
 # import modules
-from apiclient import http as apihttp
 import io
 import json
 import logging
+
+from apiclient import http as apihttp
 
 # import discovery.build, errors
 from googleapiclient.discovery import build
@@ -212,6 +213,36 @@ class Google(object):
 
         return projects
 
+    def set_iam_policy(self, project_id, policy):
+        """
+
+        Function: set_iam_policy.
+
+        description
+
+        Parameters:
+
+          project_id   - [type/description]
+          policy       - [type/description]
+
+        Returns:
+
+          return description
+        """
+        params = {
+            'resource': project_id,
+            'body': {
+                'policy': policy
+            }
+        }
+
+        try:
+            return self.crm.projects().setIamPolicy(**params).execute()
+        except errors.HttpError, httperror:
+            error = json.loads(httperror.content)['error']
+            print '[%s]' % error['message']
+            return {}
+
     def update_project(self, project_id, body):
         """Return an updated project resource."""
         params = {
@@ -294,8 +325,22 @@ class Google(object):
     #
     # Storage API (storage)
     #
-    def get_bucket_object(self, bucket_name, object_name):
+    def create_bucket(self, project, bucket):
+        """Create a GCP bucket."""
+        params = {
+            'project': project,
+            'body': {
+                'name': bucket,
+            },
+        }
+        return self.storage.buckets().insert(**params).execute()
 
+    def get_bucket(self, bucket):
+        """Get get GCP bucket."""
+        return self.storage.buckets().get(bucket=bucket).execute()
+
+    def get_bucket_object(self, bucket_name, object_name):
+        """Get the content of an object from a GCP bucket."""
         params = {
             'bucket': bucket_name,
             'object': object_name,
@@ -308,7 +353,11 @@ class Google(object):
         media = io.BytesIO()
 
         # create downloader
-        downloader = apihttp.MediaIoBaseDownload(media, request, chunksize=1024*1024)
+        downloader = apihttp.MediaIoBaseDownload(
+            media,
+            request,
+            chunksize=1024*1024
+        )
 
         done = False
         while not done:

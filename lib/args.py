@@ -33,7 +33,7 @@ def create_arg_parser():
         '--default_service_account',
         action='store',
         default=None,
-        help='Default Service Account (ex. username@project)'
+        help='Default Service Account (ex. username)'
     )
 
     parser.add_argument(

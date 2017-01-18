@@ -35,7 +35,10 @@ def get_parent(settings):
     """
     organization = settings['organization']
     folder = settings['folder']
-    parent = None
+    parent = {
+        'id': None,
+        'type': None
+    }
 
     if organization:
         parent = {
@@ -66,8 +69,8 @@ def create_project(project_id, settings):
 
       return description
     """
-    # organization = settings['organization']
-    # folder = settings['folder']
+    organization = settings['organization']
+    folder = settings['folder']
 
     # labels = settings['labels']
 
@@ -76,7 +79,8 @@ def create_project(project_id, settings):
         'name': project_id,
     }
 
-    project['parent'] = get_parent(settings)
+    if organization or folder:
+        project['parent'] = get_parent(settings)
 
     # if labels:
     #   project['labels'] = labels
@@ -198,6 +202,9 @@ def display_settings(settings):
         elif key in ['service_accounts'] and settings[key]:
             print '   Service Accounts:'
             print '     - '+'\n     - '.join(settings[key])
+
+        elif key in ['default_service_account'] and settings[key]:
+            print '   Default Service Account: %s' % settings[key]
 
         elif key in ['usage_bucket'] and settings[key]:
             print '   Usage Bucket: %s' % settings[key]
@@ -425,6 +432,8 @@ def get_effective_settings(args):
         settings['apis'] = sorted(args.apis.split(','))
     if args.billing_account:
         settings['billing_account'] = args.billing_account
+    if args.default_service_account:
+        settings['default_service_account'] = args.default_service_account
     if args.folder:
         settings['folder'] = args.folder
     if args.iam_policy:
@@ -433,10 +442,14 @@ def get_effective_settings(args):
         settings['labels'] = get_labels(args.labels)
     if args.organization:
         settings['organization'] = args.organization
+    if args.region:
+        settings['region'] = args.region
     if args.service_accounts:
         settings['service_accounts'] = sorted(args.service_accounts.split(','))
     if args.usage_bucket:
         settings['usage_bucket'] = args.usage_bucket
+    if args.zone:
+        settings['zone'] = args.region
 
     return settings
 
@@ -470,7 +483,6 @@ def set_default_service_account(project_id, settings):
     result = google.set_default_service_account(project_id, service_account)
     if result:
         print 'successful.'
-        print result
 
 
 def set_iam_policy(project_id, settings):
@@ -664,7 +676,7 @@ def main():
         project = create_project(project_id, settings)
 
         # check if project aready exists
-        if not project:
+        if not project and (settings['organization'] or settings['folder']):
             project = google.get_project(project_id)
 
             # check parent

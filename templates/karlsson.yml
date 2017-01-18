@@ -28,3 +28,7 @@ service_accounts:
   - terraform
 
 usage_bucket: karlsson-compute-usage
+
+region: us-central1
+
+zone: us-central1-a

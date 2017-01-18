@@ -86,6 +86,7 @@ def create_project(project_id, settings):
 
     result = google.create_project(project)
     if result:
+        time.sleep(1)
         print 'successful.'
     return result
 
@@ -163,17 +164,17 @@ def display_settings(settings):
     for key in sorted(settings):
 
         if key in ['organization'] and settings[key]:
-            print '   Parent: organizations/%s...' % settings[key]
+            print '   Organization: %s...' % settings[key]
 
         elif key in ['folder'] and settings[key]:
-            print '   Parent: folders/%s...' % settings[key]
+            print '   Folder: %s...' % settings[key]
 
         elif key in ['apis'] and settings[key]:
             print '   APIs: '
             print '     - ' + '\n     - '.join(settings[key])
 
         elif key in ['billing_account'] and settings[key]:
-            print '   Billing: billingAccounts/%s...' % settings[key]
+            print '   Billing Account: %s...' % settings[key]
 
         elif key in ['iam_policy'] and settings[key]:
             print '   IAM Policy:'
@@ -192,7 +193,13 @@ def display_settings(settings):
             print '     - '+'\n     - '.join(settings[key])
 
         elif key in ['usage_bucket'] and settings[key]:
-            print '   Compute Usage Bucket: %s' % settings[key]
+            print '   Usage Bucket: %s' % settings[key]
+
+        elif key in ['region'] and settings[key]:
+            print '   Region: %s' % settings[key]
+
+        elif key in ['zone'] and settings[key]:
+            print '   Zone: %s' % settings[key]
 
 
 def enable_billing(project_id, settings):
@@ -254,6 +261,7 @@ def enable_services(project_id, settings):
             print 'successful.'
         else:
             print
+    return sorted(apis)
 
 
 def enable_usage_bucket(project_id, settings):
@@ -497,6 +505,85 @@ def update_labels(project_id, settings):
         print 'successful.'
 
 
+def update_project_metadata(project_id, settings):
+    """
+
+    Function: update_project_metadata.
+
+    description
+
+    Args:
+
+      project_id - [type/description]
+      settings   - [type/description]
+
+    Returns:
+
+      return description
+    """
+    region = settings['region']
+    zone = settings['zone']
+
+    project = google.get_compute_project(project_id)
+
+    metadata = None
+    update = False
+
+    if 'commonInstanceMetadata' in project:
+        metadata = project['commonInstanceMetadata']
+
+        metadata_dict = {}
+        if 'items' in metadata:
+            for item in metadata['items']:
+                key = item['key']
+                value = item['value']
+                metadata_dict[key] = value
+
+        if region and (
+            ('google-compute-default-region' in metadata_dict
+                and metadata_dict['google-compute-default-region'] != region)
+            or 'google-compute-default-region' not in metadata_dict
+        ):
+            update = True
+
+        if zone and (
+            ('google-compute-default-zone' in metadata_dict
+                and metadata_dict['google-compute-default-zone'] != zone)
+            or 'google-compute-default-zone' not in metadata_dict
+        ):
+            update = True
+
+    else:
+        update = True
+
+    if update:
+        metadata_items = {
+            'items': []
+        }
+        if region:
+            metadata_items['items'].append({
+                'key': 'google-compute-default-region',
+                'value': region,
+            })
+        if zone:
+            metadata_items['items'].append({
+                'key': 'google-compute-default-zone',
+                'value': zone,
+            })
+        if metadata:
+            metadata_items['fingerprint'] = metadata['fingerprint']
+
+        sys.stdout.write('   * updating common instance metadata...')
+        sys.stdout.flush()
+
+        result = google.set_common_instance_metadata(
+            project_id,
+            metadata_items
+        )
+        if result:
+            print 'successful.'
+
+
 def main():
     """Main function."""
     # create arg parser
@@ -531,16 +618,16 @@ def main():
         print '\n %s:' % project_id
 
         # create the project
-        result = create_project(project_id, settings)
+        project = create_project(project_id, settings)
 
         # check if project aready exists
-        if not result:
-            result = google.get_project(project_id)
+        if not project:
+            project = google.get_project(project_id)
 
             # check parent
             current_parent = None
-            if 'parent' in result:
-                current_parent = result['parent']
+            if 'parent' in project:
+                current_parent = project['parent']
 
             parent = get_parent(settings)
 
@@ -569,13 +656,21 @@ def main():
             enable_billing(project_id, settings)
 
         # enable apis
+        apis = []
         if settings['apis']:
-            enable_services(project_id, settings)
+            apis = enable_services(project_id, settings)
 
-        # compute usage bucket
-        if settings['usage_bucket']:
-            create_usage_bucket(project_id, settings)
-            enable_usage_bucket(project_id, settings)
+        # check if compute api is enabled
+        if 'compute_component' in apis:
+
+            # compute usage bucket
+            if settings['usage_bucket']:
+                create_usage_bucket(project_id, settings)
+                enable_usage_bucket(project_id, settings)
+
+        # update project metadata
+        if settings['region'] or settings['zone']:
+            update_project_metadata(project_id, settings)
 
         base = 'https://console.cloud.google.com/home/dashboard?project='
         print '   * console: %s%s' % (base, project_id)

@@ -126,6 +126,46 @@ class Google(object):
     #
     # Compute
     #
+    def get_compute_project(self, project_id):
+        """
+
+        Function: get_compute_project.
+
+        description
+
+        Parameters:
+
+          project_id  - [type/description]
+
+        Return:
+
+          return description
+        """
+        return self.compute.projects().get(project=project_id).execute()
+
+    def set_common_instance_metadata(self, project_id, metadata):
+        """
+
+        Function: set_common_intsance_metadata.
+
+        description
+
+        Parameters:
+
+          project_id  - [type/description]
+          metadata    - [type/description]
+
+        Return:
+
+          return description
+        """
+        params = {
+            'project': project_id,
+            'body': metadata,
+        }
+        projects = self.compute.projects()
+        return projects.setCommonInstanceMetadata(**params).execute()
+
     def set_project_usgae_export_bucket(self, project_id, bucket_name):
         """
 

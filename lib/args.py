@@ -64,6 +64,14 @@ def create_arg_parser():
     )
 
     parser.add_argument(
+        '-r',
+        '--region',
+        action='store',
+        default=None,
+        help='Default Compute Region (ex. us-central)'
+    )
+
+    parser.add_argument(
         '-s',
         '--service_accounts',
         action='store',
@@ -85,6 +93,14 @@ def create_arg_parser():
         action='store',
         default=None,
         help='Usage Bucket for Compute (ex. my-compute-usage-bucket)'
+    )
+
+    parser.add_argument(
+        '-z',
+        '--zone',
+        action='store',
+        default=None,
+        help='Default Compute Zone (ex. us-central-1a)'
     )
 
     # at least project_id is required

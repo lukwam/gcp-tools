@@ -1,3 +1,4 @@
 *.pyc
+config_example.py
 debug.log
 logs/debug.log

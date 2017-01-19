@@ -16,6 +16,11 @@ from lib.google import Google
 
 google = Google()
 
+try:
+    from config import templates_bucket
+except:
+    templates_bucket = None
+
 
 def get_parent(settings):
     """
@@ -399,31 +404,47 @@ def get_effective_settings(args):
     if args.template:
         print '\nLoading template: %s...' % args.template
 
+        remote = False
         # check if file is a gs:// path
         if re.match('gs:', args.template):
-            # print args.template
-            bucket_name = args.template.split('/')[2]
-            object_name = '/'.join(args.template.split('/')[3:])
-            print google.get_bucket_object(bucket_name, object_name)
+            path = args.template.replace('gs://', '')
+            bucket_name = path.split('/')[0]
+            object_name = '/'.join(path.split('/')[1:])
+            remote = True
 
-        # look for template in templates directory
-        template_files = glob.glob('templates/%s.yml' % args.template)
-        if len(template_files) < 1:
-            print 'ERROR: Template not found: %s' % args.template
-            sys.exit(1)
+        # otherwise check if templates_bucket is set
+        elif templates_bucket:
+            path = templates_bucket.replace('gs://', '')
+            bucket_name = path.split('/')[0]
+            object_name = '/'.join(path.split('/')[1:])+args.template+'.yml'
+            remote = True
 
-        settings['template'] = args.template
+        if remote:
+            # get the file from google
+            stream = google.get_bucket_object(bucket_name, object_name)
+            text = stream.getvalue()
+            docs = yaml.load_all(text)
+            # print docs
 
-        # open the template file as a stream and process the yaml
-        stream = open(template_files[0], 'r')
-        docs = yaml.load_all(stream)
+        else:
+            # look for template in templates directory
+            template_files = glob.glob('templates/%s.yml' % args.template)
+            if len(template_files) < 1:
+                print 'ERROR: Template not found: %s' % args.template
+                sys.exit(1)
+
+            settings['template'] = args.template
+
+            # open the template file as a stream and process the yaml
+            stream = open(template_files[0], 'r')
+            docs = yaml.load_all(stream)
 
         # apply template values to settings
         for doc in docs:
             for key, value in doc.items():
-                # print k+' --> '+str(v)
+                # print key+' --> '+str(value)
                 settings[key] = value
-            # print
+        # print
 
     # print json.dumps(settings, indent=2, sort_keys=True)
 

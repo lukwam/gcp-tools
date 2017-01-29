@@ -2,6 +2,7 @@
 """Classes for calling Google APIs."""
 
 # import modules
+import httplib2
 import io
 import json
 import logging
@@ -25,6 +26,8 @@ class Google(object):
 
     def __init__(self):
         """Initialize."""
+        self.http = None
+
         self.billing = None
         self.compute = None
         self.compute_alpha = None
@@ -37,6 +40,7 @@ class Google(object):
         """Athenticate with gcloud application-default credentials."""
         # get application-default credentials from gcloud
         credentials = GoogleCredentials.get_application_default()
+        self.http = credentials.authorize(httplib2.Http())
 
         #
         # build the various services that we'll need
@@ -231,6 +235,26 @@ class Google(object):
         except errors.HttpError, httperror:
             error = json.loads(httperror.content)['error']
             print '[%s]' % error['message']
+            return {}
+
+    def get_folders(self, parent):
+        """Return a list of folders of a parent."""
+        # create a request to list organizations
+        url = 'https://cloudresourcemanager.googleapis.com/v2alpha1/folders'
+        url += '?parent='+parent
+
+        headers = {'ContentType': 'application/json'}
+
+        (response, content) = self.http.request(
+            url,
+            headers=headers,
+            method='GET'
+        )
+
+        json_content = json.loads(content)
+        if 'folders' in json_content:
+            return json_content['folders']
+        else:
             return {}
 
     def get_organizations(self):

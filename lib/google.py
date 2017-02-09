@@ -65,6 +65,35 @@ class Google(object):
         # build a service management API service
         self.storage = build('storage', 'v1', credentials=credentials)
 
+    def display_labels(self, labels):
+        """Return a project's labels as a text string."""
+        output = []
+        for key in sorted(labels):
+            value = labels[key]
+            output.append('%s=%s' % (key, value))
+        return ','.join(output)
+
+    def display_parents(self, parent):
+        """Return a project's org path as a text string."""
+        output = []
+        while parent:
+            oid = parent['id']
+            if parent['type'] == 'folder':
+                org = self.get_folder(oid)
+            elif parent['type'] == 'organization':
+                org = self.get_organization('organizations/%s' % (oid))
+                parent = None
+            name = org['displayName']
+            output.insert(0, name)
+
+            if 'parent' in org:
+                parent = {
+                    'type': org['parent'].split('/')[0][0:-1],
+                    'id': org['parent'].split('/')[1]
+                }
+
+        return ' > '.join(output)
+
     #
     # Cloud Billing API (cloudbilling)
     #
@@ -237,6 +266,21 @@ class Google(object):
             print '[%s]' % error['message']
             return {}
 
+    def get_folder(self, folder_id):
+        """Return a folder."""
+        # create a request to list organizations
+        url = 'https://cloudresourcemanager.googleapis.com/v2alpha1/folders/'
+        url += folder_id
+
+        headers = {'ContentType': 'application/json'}
+
+        (response, content) = self.http.request(
+            url,
+            headers=headers,
+            method='GET'
+        )
+        return json.loads(content)
+
     def get_folders(self, parent):
         """Return a list of folders of a parent."""
         # create a request to list organizations
@@ -256,6 +300,10 @@ class Google(object):
             return json_content['folders']
         else:
             return {}
+
+    def get_organization(self, name):
+        """Return an organization."""
+        return self.crm.organizations().get(name=name).execute()
 
     def get_organizations(self):
         """Return a list of organizations."""

@@ -48,13 +48,13 @@ def main():
         status = project['lifecycleState']
 
         parent_id = project['parent']['id']
-        parent_type = project['parent']['type']
+        # parent_type = project['parent']['type']
 
-        if project_id in folders:
-            org_path = folders[project_id]
+        if parent_id in folders:
+            org_path = folders[parent_id]
         else:
             org_path = google.display_parents(project['parent'])
-            folders[project_id] = org_path
+            folders[parent_id] = org_path
 
         print '   Created:  %s' % created
         print '   ID:       %s' % (pid)
@@ -65,10 +65,6 @@ def main():
         print '   Org Path: %s' % (org_path)
         print '   URL:      %s%s' % (project_url, project_id)
         print
-
-
-
-        # print project
 
 
 if __name__ == "__main__":

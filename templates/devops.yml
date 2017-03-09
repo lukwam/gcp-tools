@@ -1,0 +1,13 @@
+# devops template
+billing_account: 00A539-93294F-AC9B6F
+
+iam_policy:
+  owner:
+    - user:sa-karlsson@broadinstitute.org
+  editor:
+    - group:devops@broadinstitute.org
+
+labels:
+  costobject: broad-1550167
+
+folder: 538415940587

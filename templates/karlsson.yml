@@ -1,5 +1,5 @@
 apis:
-  - compute_component
+  - compute-component.googleapis.com
   - storage-api.googleapis.com
 
 billing_account: 00A539-93294F-AC9B6F

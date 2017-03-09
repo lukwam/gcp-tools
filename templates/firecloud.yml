@@ -1,0 +1,52 @@
+apis:
+  - bigquery-json.googleapis.com
+  - clouddebugger.googleapis.com
+  - compute-component.googleapis.com
+  - container.googleapis.com
+  - dataflow.googleapis.com
+  - dataproc.googleapis.com
+  - deploymentmanager.googleapis.com
+  - genomics.googleapis.com
+  - logging.googleapis.com
+  - replicapool.googleapis.com
+  - replicapoolupdater.googleapis.com
+  - resourceviews.googleapis.com
+  - sql-component.googleapis.com
+  - storage-api.googleapis.com
+  - storage-component.googleapis.com
+
+billing_account: 00A539-93294F-AC9B6F
+
+iam_policy:
+  owner:
+    - user:abaumann@broadinstitute.org
+    - user:dmohs@broadinstitute.org
+    - user:dvoet@broadinstitute.org
+    - user:sa-ferrara@broadinstitute.org
+    - user:sa-karlsson@broadinstitute.org
+    - user:sa-teixeira@broadinstitute.org
+  editor:
+    - ngroup:firecloud-project-owners@firecloud.org
+    - serviceAccount:cromwell-prod@broad-dsde-prod.iam.gserviceaccount.com
+    - serviceAccount:rawls-prod@broad-dsde-prod.iam.gserviceaccount.com
+
+labels:
+  costobject: broad-1550167
+  environment: testing
+
+# organization: 548622027621
+
+folder: 538415940587
+
+service_accounts:
+  - cloudhealth
+  - default
+  - terraform
+
+# default_service_account: default
+
+usage_bucket: karlsson-compute-usage
+
+region: us-central1
+
+zone: us-central1-a

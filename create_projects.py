@@ -405,39 +405,41 @@ def get_effective_settings(args):
         print '\nLoading template: %s...' % args.template
 
         remote = False
-        # check if file is a gs:// path
-        if re.match('gs:', args.template):
-            path = args.template.replace('gs://', '')
-            bucket_name = path.split('/')[0]
-            object_name = '/'.join(path.split('/')[1:])
-            remote = True
+        #
+        # # check if file is a gs:// path
+        # if re.match('gs:', args.template):
+        #     path = args.template.replace('gs://', '')
+        #     bucket_name = path.split('/')[0]
+        #     object_name = '/'.join(path.split('/')[1:])
+        #     remote = True
+        #
+        # # otherwise check if templates_bucket is set
+        # elif templates_bucket:
+        #     path = templates_bucket.replace('gs://', '')
+        #     bucket_name = path.split('/')[0]
+        #     object_name = '/'.join(path.split('/')[1:])+args.template+'.yml'
+        #     remote = True
+        #
+        # if remote:
+        #     # get the file from google
+        #     stream = google.get_bucket_object(bucket_name, object_name)
+        #     text = stream.getvalue()
+        #     docs = yaml.load_all(text)
+        #     # print docs
+        #
+        # else:
 
-        # otherwise check if templates_bucket is set
-        elif templates_bucket:
-            path = templates_bucket.replace('gs://', '')
-            bucket_name = path.split('/')[0]
-            object_name = '/'.join(path.split('/')[1:])+args.template+'.yml'
-            remote = True
+        # look for template in templates directory
+        template_files = glob.glob('templates/%s.yml' % args.template)
+        if len(template_files) < 1:
+            print 'ERROR: Template not found: %s' % args.template
+            sys.exit(1)
 
-        if remote:
-            # get the file from google
-            stream = google.get_bucket_object(bucket_name, object_name)
-            text = stream.getvalue()
-            docs = yaml.load_all(text)
-            # print docs
+        settings['template'] = args.template
 
-        else:
-            # look for template in templates directory
-            template_files = glob.glob('templates/%s.yml' % args.template)
-            if len(template_files) < 1:
-                print 'ERROR: Template not found: %s' % args.template
-                sys.exit(1)
-
-            settings['template'] = args.template
-
-            # open the template file as a stream and process the yaml
-            stream = open(template_files[0], 'r')
-            docs = yaml.load_all(stream)
+        # open the template file as a stream and process the yaml
+        stream = open(template_files[0], 'r')
+        docs = yaml.load_all(stream)
 
         # apply template values to settings
         for doc in docs:

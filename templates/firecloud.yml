@@ -1,3 +1,4 @@
+# firecloud template
 apis:
   - bigquery-json.googleapis.com
   - clouddebugger.googleapis.com
@@ -36,7 +37,7 @@ labels:
 
 # organization: 548622027621
 
-folder: 538415940587
+folder: 1063130777194
 
 service_accounts:
   - cloudhealth

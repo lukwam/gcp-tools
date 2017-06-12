@@ -27,7 +27,7 @@ iam_policy:
     - user:sa-karlsson@broadinstitute.org
     - user:sa-teixeira@broadinstitute.org
   editor:
-    - ngroup:firecloud-project-owners@firecloud.org
+    - group:firecloud-project-owners@firecloud.org
     - serviceAccount:cromwell-prod@broad-dsde-prod.iam.gserviceaccount.com
     - serviceAccount:rawls-prod@broad-dsde-prod.iam.gserviceaccount.com
 

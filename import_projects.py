@@ -308,6 +308,8 @@ def main():
     # move projects into the organization
     move_projects(admin, projects)
 
+    print 'Done.'
+
 
 if __name__ == "__main__":
     main()

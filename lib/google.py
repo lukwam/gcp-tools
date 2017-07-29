@@ -15,6 +15,10 @@ from googleapiclient import errors
 
 # import GoogleCredentials
 from oauth2client.client import GoogleCredentials
+from oauth2client import client, tools
+from oauth2client.file import Storage
+
+from oauth2client.service_account import ServiceAccountCredentials
 
 # enable logging
 logging.basicConfig(filename='logs/debug.log', level=logging.DEBUG)
@@ -24,10 +28,11 @@ logging.basicConfig(filename='logs/debug.log', level=logging.DEBUG)
 class Google(object):
     """Class with methods for working with Google APIs."""
 
-    def __init__(self):
+    def __init__(self, superadmin=None):
         """Initialize."""
         self.http = None
 
+        self.admin = None
         self.billing = None
         self.compute = None
         self.compute_alpha = None
@@ -36,15 +41,60 @@ class Google(object):
         self.smgt = None
         self.storage = None
 
-    def auth(self):
+        self.app_name = 'GCP Tools'
+        self.client_secrets_file = 'client_secrets.json'
+        self.credentials_file = 'credentials.json'
+
+        self.superadmin = superadmin
+
+        self.domain = None
+        if self.superadmin:
+            self.domain = self.superadmin.split('@')[1]
+
+        self.organization_id = None
+
+        self.scopes = [
+            'https://www.googleapis.com/auth/admin.directory.user',
+            'https://www.googleapis.com/auth/cloud-platform',
+        ]
+
+        self.credentials = None
+
+    def auth(
+            self,
+            client_secrets_file=None,
+            service_account_file=None,
+            sub_account=None,
+    ):
         """Athenticate with gcloud application-default credentials."""
-        # get application-default credentials from gcloud
-        credentials = GoogleCredentials.get_application_default()
+        if client_secrets_file:
+            credentials = self.auth_stored_credentials(
+                client_secrets_file=client_secrets_file,
+                scopes=self.scopes
+            )
+
+        elif service_account_file:
+            credentials = ServiceAccountCredentials.from_json_keyfile_name(
+                service_account_file,
+                scopes=self.scopes,
+            )
+            if sub_account:
+                credentials = credentials.create_delegated(sub_account)
+
+        else:
+            # get application-default credentials from gcloud
+            credentials = GoogleCredentials.get_application_default()
+
+        self.credentials = credentials
         self.http = credentials.authorize(httplib2.Http())
+
 
         #
         # build the various services that we'll need
         #
+
+        # admin directory
+        self.admin = build('admin', 'directory_v1', credentials=credentials)
 
         # build a cloud billing API service
         self.billing = build('cloudbilling', 'v1', credentials=credentials)
@@ -64,6 +114,31 @@ class Google(object):
 
         # build a service management API service
         self.storage = build('storage', 'v1', credentials=credentials)
+
+    def auth_stored_credentials(self, client_secrets_file, scopes=[]):
+        """Authorize stored credentials."""
+        try:
+            import argparse
+            parser = argparse.ArgumentParser(parents=[tools.argparser])
+            parser.add_argument('args', nargs=argparse.REMAINDER)
+            flags = parser.parse_args()
+            flags.noauth_local_webserver = True
+        except ImportError:
+            flags = None
+        store = Storage(self.credentials_file)
+        credentials = store.get()
+        if not credentials or credentials.invalid:
+            flow = client.flow_from_clientsecrets(
+                client_secrets_file,
+                scopes,
+            )
+            flow.user_agent = self.app_name
+            if flags:
+                credentials = tools.run_flow(flow, store, flags)
+            else:  # Needed only for compatibility with Python 2.6
+                credentials = tools.run(flow, store)
+            print 'Saved credentials to ' + self.credentials_file
+        return credentials
 
     def display_labels(self, labels):
         """Return a project's labels as a text string."""
@@ -395,6 +470,25 @@ class Google(object):
             error = json.loads(httperror.content)['error']
             print '[%s]' % error['message']
             return {}
+
+    #
+    # Admin SDK - Directory
+    #
+    def get_users(self, fields='nextPageToken,users(primaryEmail,suspended)'):
+        """Return all users in the domain."""
+        params = {
+            'customer': 'my_customer',
+            'fields': fields,
+        }
+        users = self.admin.users()
+        request = users.list(**params)
+
+        google_users = []
+        while request is not None:
+            users_list = request.execute()
+            google_users += users_list.get('users', [])
+            request = users.list_next(request, users_list)
+        return google_users
 
     #
     # IAM (Identity and Access Management) API (iam)
